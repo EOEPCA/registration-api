@@ -70,7 +70,6 @@ pygeoapi is open source and released under an MIT license, and runs on all major
 
 pygeoapi is [Certified OGC Compliant](https://www.ogc.org/resources/product-details/?pid=1663) and is an OGC Reference Implementation for [OGC API - Features 1.0](https://www.opengeospatial.org/resource/products/details/?pid=1663), [OGC API - EDR 1.0.1](https://www.opengeospatial.org/resource/products/details/?pid=1663) and [OGC API - Tiles 1.0](https://www.opengeospatial.org/resource/products/details/?pid=1663)
 
-[![Product Name Screen Shot][product-screenshot]](https://github.com/EOEPCA/rm-registration-api)
 
 ### Built With
 
