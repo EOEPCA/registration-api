@@ -1,0 +1,56 @@
+server:
+    bind:
+        host: 0.0.0.0
+        port: 80
+    url: http://localhost:5000
+    mimetype: application/json; charset=UTF-8
+    encoding: utf-8
+    gzip: false
+    language: en-US
+    cors: true
+    pretty_print: true
+    limit: 10
+    # templates: /path/to/templates
+
+logging:
+    level: ERROR
+    #logfile: /tmp/pygeoapi.log
+
+metadata:
+    identification:
+        title: EOEPCA+ Registration API based on pygeoapi
+        description: pygeoapi provides an API to geospatial data
+        keywords:
+            - geospatial
+            - data
+            - api
+        keywords_type: theme
+        terms_of_service: https://creativecommons.org/licenses/by/4.0/
+        url: https://github.com/geopython/pygeoapi
+    license:
+        name: CC-BY 4.0 license
+        url: https://creativecommons.org/licenses/by/4.0/
+    provider:
+        name: pygeoapi Development Team
+        url: https://pygeoapi.io
+    contact:
+        name: Tzotsos, Angelos
+        position: Core Dev
+        address: Mailing Address
+        city: City
+        stateorprovince: Administrative Area
+        postalcode: Zip or Postal Code
+        country: Greece
+        phone: +xx-xxx-xxx-xxxx
+        fax: +xx-xxx-xxx-xxxx
+        email: you@example.org
+        url: Contact URL
+        hours: Hours of Service
+        instructions: During hours of service.  Off on weekends.
+        role: pointOfContact
+
+resources:
+    hello-world:
+        type: process
+        processor:
+            name: HelloWorld
