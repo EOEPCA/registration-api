@@ -68,7 +68,7 @@ The project emerged as part of the next generation OGC API efforts in 2018 and p
 
 pygeoapi is open source and released under an MIT license, and runs on all major platforms (Windows, Linux, Mac OS X). It is an official [OSGeo Project](https://www.osgeo.org/projects/pygeoapi/).
 
-pygeoapi is [Certified OGC Compliant](https://www.ogc.org/resources/product-details/?pid=1663) and is an OGC Reference Implementation for [OGC API - Features 1.0](https://www.opengeospatial.org/resource/products/details/?pid=1663), [OGC API - EDR 1.0.1](https://www.opengeospatial.org/resource/products/details/?pid=1663) and [OGC API - Tiles 1.0](https://www.opengeospatial.org/resource/products/details/?pid=1663)
+pygeoapi is [Certified OGC Compliant](https://www.ogc.org/resources/product-details/?pid=1663) and is an OGC Reference Implementation for [OGC API - Features 1.0](https://www.opengeospatial.org/resource/products/details/?pid=1663), [OGC API - EDR 1.0.1](https://www.opengeospatial.org/resource/products/details/?pid=1663), [OGC API - Tiles 1.0](https://www.opengeospatial.org/resource/products/details/?pid=1663) and [OGC API - Processes 1.0](https://www.ogc.org/resources/product-details/?pid=1826)
 
 
 ### Built With
