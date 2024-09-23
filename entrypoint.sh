@@ -4,6 +4,7 @@
 # Authors: Just van den Broecke <justb4@gmail.com>
 #
 # Copyright (c) 2019 Just van den Broecke
+# Copyright (c) 2024 Angelos Tzotsos
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -35,8 +36,9 @@ echo "START /entrypoint.sh"
 set +e
 
 export PYGEOAPI_HOME=/pygeoapi
+export OPENAPI_HOME=/openapi
 export PYGEOAPI_CONFIG="${PYGEOAPI_HOME}/local.config.yml"
-export PYGEOAPI_OPENAPI="${PYGEOAPI_HOME}/local.openapi.yml"
+export PYGEOAPI_OPENAPI="${OPENAPI_HOME}/local.openapi.yml"
 
 # gunicorn env settings with defaults
 SCRIPT_NAME=${SCRIPT_NAME:=/}
@@ -58,6 +60,7 @@ function error() {
 
 # Workdir
 cd ${PYGEOAPI_HOME}
+mkdir -p ${OPENAPI_HOME}
 
 echo "Trying to generate openapi.yml"
 pygeoapi openapi generate ${PYGEOAPI_CONFIG} --output-file ${PYGEOAPI_OPENAPI}
