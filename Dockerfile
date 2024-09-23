@@ -44,7 +44,7 @@ RUN \
 ADD requirements.txt /pygeoapi/
 ADD default.config.yml /pygeoapi/local.config.yml
 ADD entrypoint.sh /entrypoint.sh
-ADD registration.py /pygeoapi/pygeoapi/process/registration.py
+ADD registration.py /usr/local/lib/python3.10/dist-packages/pygeoapi/process/registration.py
 
 # Install pygeoapi
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
