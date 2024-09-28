@@ -68,23 +68,22 @@ The project emerged as part of the next generation OGC API efforts in 2018 and p
 
 pygeoapi is open source and released under an MIT license, and runs on all major platforms (Windows, Linux, Mac OS X). It is an official [OSGeo Project](https://www.osgeo.org/projects/pygeoapi/).
 
-pygeoapi is [Certified OGC Compliant](https://www.ogc.org/resources/product-details/?pid=1663) and is an OGC Reference Implementation for [OGC API - Features 1.0](https://www.opengeospatial.org/resource/products/details/?pid=1663), [OGC API - EDR 1.0.1](https://www.opengeospatial.org/resource/products/details/?pid=1663), [OGC API - Tiles 1.0](https://www.opengeospatial.org/resource/products/details/?pid=1663) and [OGC API - Processes 1.0](https://www.ogc.org/resources/product-details/?pid=1826)
-
+pygeoapi is [Certified OGC Compliant](https://www.ogc.org/resources/product-details/?pid=1663) and is an OGC Reference Implementation for [OGC API - Features 1.0](https://www.ogc.org/resource/products/details/?pid=1663), [OGC API - EDR 1.0.1](https://www.ogc.org/resource/products/details/?pid=1663), [OGC API - Tiles 1.0](https://www.ogc.org/resource/products/details/?pid=1663) and [OGC API - Processes 1.0](https://www.ogc.org/resource/products/details/?pid=1826).
 
 ### Built With
 
-- [Python](https://www.python.org/)
-- [pygeoapi](http://pygeoapi.io/)
+- [Python](https://www.python.org)
+- [pygeoapi](https://pygeoapi.io)
 
 ### Interfaces
 
 The Registration API provides the following interfaces:
-* OGC API - Processes - Part1: Core
+* OGC API - Processes - Part 1: Core
 
 Internally, Data and Metadata registration can be done by the following ways:
-* Transaction interfaces (OGC CSW-T or OGC API - Features - Part4: Create, Replace, Update, Delete) to EOEPCA Resource Catalogue
+* Transaction interfaces (OGC CSW-T or OGC API - Features - Part 4: Create, Replace, Update, Delete) to EOEPCA Resource Catalogue
 * Transaction interfaces (STAC API - Create, Replace, Update, Delete) to EOEPCA Data Catalogue
-* Transaction interfaces (OGC API - Features - Part4: Create, Replace, Update, Delete) to EOEPCA Data Access
+* Transaction interfaces (OGC API - Features - Part 4: Create, Replace, Update, Delete) to EOEPCA Data Access
 * Invoking the EOEPCA Harvester component
 
 pygeoapi implements the following interfaces:
