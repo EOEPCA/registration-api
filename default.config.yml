@@ -2,7 +2,7 @@ server:
     bind:
         host: 0.0.0.0
         port: 80
-    url: http://localhost:5000
+    url: http://localhost
     mimetype: application/json; charset=UTF-8
     encoding: utf-8
     gzip: false
@@ -15,7 +15,7 @@ server:
       attribution: 'Map data &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     manager:
         name: TinyDB
-        connection: /tmp/wis2-gdc-process-manager.db
+        connection: /tmp/registration-api-process-manager.db
         output_dir: /tmp/
 
 logging:
@@ -61,4 +61,4 @@ resources:
     registrar:
         type: process
         processor:
-            name: pygeoapi.process.registration.RegistrationProcessor
+            name: registration_api.processes.registration.RegistrarProcessor
