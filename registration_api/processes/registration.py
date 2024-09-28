@@ -132,10 +132,11 @@ class RegistrarProcessor(BaseProcessor):
         if not bool(outputs):
             produced_outputs = {
                 'id': PROCESS_METADATA['id'],
-                'type': type_,
-                'source': source,
-                'target': target,
-                'content': content
+                'resource-and-data-catalogue-link': {
+                    'href': f'{target}/collections/metadata:main/items/{id_}',
+                    'rel': 'item',
+                    'type': 'application/geo+json'
+                }
             }
 
         return mimetype, produced_outputs
