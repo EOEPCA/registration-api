@@ -33,7 +33,7 @@ services:
     container_name: registration-api
     build:
       context: .
-    image: geopython/pygeoapi:latest
+    image: eoepca/registration-api:latest
     volumes:
       - registration-api-data:/data
     healthcheck:
