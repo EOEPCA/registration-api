@@ -21,6 +21,7 @@
 
 import logging
 
+from owslib.ogcapi.records import Records
 import requests
 
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
@@ -108,6 +109,7 @@ class RegistrarProcessor(BaseProcessor):
 
         type_ = data.get('type')
         source = data.get('source')
+        target = data.get('target')
 
         if None in [type_, source]:
             msg = 'Cannot process without a type and source'
@@ -115,13 +117,24 @@ class RegistrarProcessor(BaseProcessor):
 
         content = requests.get(source).json()
 
+        id_ = content['id']
+
+        r = Records(target)
+
+        try:
+            _ = r.collection_item('metadata:main', id_)
+            r.collection_item_update('metadata:main', id_, content)
+        except RuntimeError:
+            r.collection_item_create('metadata:main', content)
+
         produced_outputs = {}
 
-        if not bool(outputs) or 'echo' in outputs:
+        if not bool(outputs):
             produced_outputs = {
                 'id': PROCESS_METADATA['id'],
                 'type': type_,
                 'source': source,
+                'target': target,
                 'content': content
             }
 

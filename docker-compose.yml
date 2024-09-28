@@ -45,6 +45,16 @@ services:
       - registration-api-net
     <<: *logging
 
+  resource-and-data-catalogue:
+    container_name: resource-and-data-catalogue
+    image: geopython/pycsw:latest
+    volumes:
+      - ./docker/resource-and-data-catalogue/resource-and-data-catalogue.config.yml:/etc/pycsw/pycsw.yml
+      - ./docker/resource-and-data-catalogue/data:/opt/pycsw
+    restart: unless-stopped
+    networks:
+      - registration-api-net
+
 volumes:
   registration-api-data:
 

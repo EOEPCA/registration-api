@@ -42,7 +42,7 @@ RUN \
     && rm -rf /var/lib/apt/lists/*
 
 ADD requirements.txt /pygeoapi/
-ADD default.config.yml /pygeoapi/local.config.yml
+ADD registration-api.config.yml /pygeoapi/local.config.yml
 ADD entrypoint.sh /entrypoint.sh
 ADD registration_api /usr/local/lib/python3.10/dist-packages/registration_api
 
