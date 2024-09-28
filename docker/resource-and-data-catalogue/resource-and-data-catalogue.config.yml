@@ -30,7 +30,7 @@
 # =================================================================
 
 server:
-    url: http://localhost:5001
+    url: http://localhost:5002
     mimetype: application/xml; charset=UTF-8
     encoding: UTF-8
     language: en-US

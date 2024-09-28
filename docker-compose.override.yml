@@ -22,7 +22,7 @@
 services:
   registration-api:
     ports:
-      - 80:80
+      - 5001:80
   resource-and-data-catalogue:
     ports:
-      - 5001:8000
+      - 5002:8000
