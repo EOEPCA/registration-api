@@ -21,6 +21,8 @@
 
 import logging
 
+import requests
+
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
 
 
@@ -111,13 +113,16 @@ class RegistrarProcessor(BaseProcessor):
             msg = 'Cannot process without a type and source'
             raise ProcessorExecuteError(msg)
 
+        content = requests.get(source).json()
+
         produced_outputs = {}
 
         if not bool(outputs) or 'echo' in outputs:
             produced_outputs = {
                 'id': PROCESS_METADATA['id'],
                 'type': type_,
-                'source': source
+                'source': source,
+                'content': content
             }
 
         return mimetype, produced_outputs
