@@ -37,7 +37,8 @@ REGISTER_SCHEMA = {
     'type': 'object',
     'required': [
         'type',
-        'source'
+        'source',
+        'target'
     ],
     'properties': {
         'type': {
@@ -52,6 +53,11 @@ REGISTER_SCHEMA = {
                 'format': 'uri',
                 'description': 'Source data from URL'
             }]
+        },
+        'target': {
+            'type': 'string',
+            'format': 'uri',
+            'description': 'Endpoint to register to'
         }
     }
 }
@@ -63,12 +69,18 @@ DEREGISTER_SCHEMA = {
     'description': 'EOEPCA registration API deregister schema',
     'type': 'object',
     'required': [
-        'id'
+        'id',
+        'target'
     ],
     'properties': {
         'id': {
             'type': 'string',
             'description': 'Resource identifier'
+        },
+        'target': {
+            'type': 'string',
+            'format': 'uri',
+            'description': 'Endpoint to deregister from'
         }
     }
 }
@@ -94,7 +106,7 @@ PROCESS_REGISTER_METADATA = {
     'inputs': {
         'type': {
             'title': 'Type',
-            'description': 'Type of resource',
+            'description': REGISTER_SCHEMA['properties']['type']['description'],  # noqa
             'schema': REGISTER_SCHEMA['properties']['type'],
             'minOccurs': 1,
             'maxOccurs': 1,
@@ -102,12 +114,20 @@ PROCESS_REGISTER_METADATA = {
         },
         'source': {
             'title': 'Source',
-            'description': 'Source of resource',
+            'description': 'Source of resource to register',
             'schema': REGISTER_SCHEMA['properties']['source'],
-            'minOccurs': 0,
+            'minOccurs': 1,
             'maxOccurs': 1,
             'keywords': ['source']
-        }
+        },
+        'target': {
+            'title': 'Target',
+            'description': REGISTER_SCHEMA['properties']['target']['description'],  # noqa
+            'schema': REGISTER_SCHEMA['properties']['target'],
+            'minOccurs': 1,
+            'maxOccurs': 1,
+            'keywords': ['target']
+        },
     },
     'outputs': {
         'registrar': {
@@ -122,7 +142,8 @@ PROCESS_REGISTER_METADATA = {
     'example': {
         'inputs': {
             'type': 'item',
-            'source': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/examples/simple-item.json'  # noqa
+            'source': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/examples/simple-item.json',  # noqa
+            'target': 'http://localhost:5002'
         }
     }
 }
@@ -149,12 +170,20 @@ PROCESS_DEREGISTER_METADATA = {
     'inputs': {
         'id': {
             'id': 'Identifier',
-            'description': 'Resource identifier',
+            'description': DEREGISTER_SCHEMA['properties']['id']['description'],  # noqa
             'schema': DEREGISTER_SCHEMA['properties']['id'],
             'minOccurs': 1,
             'maxOccurs': 1,
             'keywords': ['identifier']
-        }
+        },
+        'target': {
+            'title': 'Target',
+            'description': DEREGISTER_SCHEMA['properties']['target']['description'],  # noqa
+            'schema': DEREGISTER_SCHEMA['properties']['target'],
+            'minOccurs': 1,
+            'maxOccurs': 1,
+            'keywords': ['target']
+        },
     },
     'outputs': {
         'deregistrar': {
@@ -168,7 +197,8 @@ PROCESS_DEREGISTER_METADATA = {
     },
     'example': {
         'inputs': {
-            'id': 'id123'
+            'id': '20201211_223832_CS',
+            'target': 'http://localhost:5002'
         }
     }
 }
@@ -193,7 +223,7 @@ class RegisterProcessor(BaseProcessor):
         mimetype = 'application/json'
 
         validation_errors = []
-        target = data.get('target')
+        target = data['target']
 
         LOGGER.debug('Validating input against schema')
         validator = Draft202012Validator(REGISTER_SCHEMA)
@@ -254,7 +284,7 @@ class DeregisterProcessor(BaseProcessor):
         mimetype = 'application/json'
 
         validation_errors = []
-        target = data.get('target')
+        target = data['target']
 
         LOGGER.debug('Validating input against schema')
         validator = Draft202012Validator(DEREGISTER_SCHEMA)
