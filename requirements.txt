@@ -1,4 +1,4 @@
 jsonschema
 pygeoapi==0.18.0
-OWSLib
+OWSLib==0.31.0
 requests
