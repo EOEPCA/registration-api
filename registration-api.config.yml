@@ -11,8 +11,8 @@ server:
     pretty_print: true
     limit: 10
     map:
-      url: https://tile.openstreetmap.org/{z}/{x}/{y}.png
-      attribution: 'Map data &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+        url: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+        attribution: 'Map data &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     manager:
         name: TinyDB
         connection: /tmp/registration-api-process-manager.db
