@@ -58,7 +58,11 @@ metadata:
         role: pointOfContact
 
 resources:
-    registrar:
+    register:
         type: process
         processor:
-            name: registration_api.processes.registration.RegistrarProcessor
+            name: registration_api.processes.registration.RegisterProcessor
+    deregister:
+        type: process
+        processor:
+            name: registration_api.processes.registration.DeregisterProcessor
