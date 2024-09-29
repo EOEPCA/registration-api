@@ -1,4 +1,4 @@
-jsonschema
+jsonschema==4.23.0
 pygeoapi==0.18.0
 OWSLib==0.31.0
-requests
+requests==2.32.3
