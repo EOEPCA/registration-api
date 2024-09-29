@@ -222,22 +222,15 @@ class RegisterProcessor(BaseProcessor):
     def execute(self, data, outputs=None):
         mimetype = 'application/json'
 
-        validation_errors = []
-        target = data['target']
-
         LOGGER.debug('Validating input against schema')
-        validator = Draft202012Validator(REGISTER_SCHEMA)
-
-        for error in validator.iter_errors(data):
-            LOGGER.debug(f'{error.json_path}: {error.message}')
-            validation_errors.append(f'{error.json_path}: {error.message}')
+        validation_errors = validate_json(REGISTER_SCHEMA, data)
 
         if validation_errors:
             raise ProcessorExecuteError(validation_errors)
 
         content = requests.get(data['source']).json()
-
         id_ = content['id']
+        target = data['target']
 
         r = Records(target)
 
@@ -283,20 +276,13 @@ class DeregisterProcessor(BaseProcessor):
     def execute(self, data, outputs=None):
         mimetype = 'application/json'
 
-        validation_errors = []
-        target = data['target']
-
         LOGGER.debug('Validating input against schema')
-        validator = Draft202012Validator(DEREGISTER_SCHEMA)
-
-        for error in validator.iter_errors(data):
-            LOGGER.debug(f'{error.json_path}: {error.message}')
-            validation_errors.append(f'{error.json_path}: {error.message}')
-
+        validation_errors = validate_json(DEREGISTER_SCHEMA, data)
         if validation_errors:
             raise ProcessorExecuteError(validation_errors)
 
         id_ = data['id']
+        target = data['target']
 
         r = Records(target)
 
@@ -317,3 +303,24 @@ class DeregisterProcessor(BaseProcessor):
 
     def __repr__(self):
         return f'<RegisterProcessor> {self.name}'
+
+
+def validate_json(schema, instance):
+    """
+    Helper function to validate JSON against a JSON Schema
+
+    :param schema: `dict` of JSON Schema
+    :paran instance: `dict` of request instance
+
+    :returns: `list` of valiation errors
+    """
+
+    validation_errors = []
+    LOGGER.debug('Validating input against schema')
+    validator = Draft202012Validator(schema)
+
+    for error in validator.iter_errors(instance):
+        LOGGER.debug(f'{error.json_path}: {error.message}')
+        validation_errors.append(f'{error.json_path}: {error.message}')
+
+    return validation_errors
