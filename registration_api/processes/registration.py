@@ -21,13 +21,40 @@
 
 import logging
 
+from jsonschema.validators import Draft202012Validator
 from owslib.ogcapi.records import Records
 import requests
 
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
 
-
 LOGGER = logging.getLogger(__name__)
+
+REQUEST_SCHEMA = {
+    '$schema': 'https://json-schema.org/draft/2020-12/schema',
+    '$id': 'eoepca-registration-api-process-registrar-request',
+    'title': 'EOEPCA metadata profile',
+    'description': 'EOEPCA metadata profile',
+    'type': 'object',
+    'required': [
+        'type',
+        'source'
+    ],
+    'properties': {
+        'type': {
+            'type': 'string',
+            'description': 'Resource type'
+        },
+        'source': {
+            'oneOf': [{
+                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/item-spec/json-schema/item.json'  # noqa
+            }, {
+                'type': 'string',
+                'format': 'uri',
+                'description': 'Source data from URL'
+            }]
+        }
+    }
+}
 
 #: Process metadata and description
 PROCESS_METADATA = {
@@ -52,9 +79,7 @@ PROCESS_METADATA = {
         'type': {
             'title': 'Type',
             'description': 'Type of resource',
-            'schema': {
-                'type': 'string'
-            },
+            'schema': REQUEST_SCHEMA['properties']['type'],
             'minOccurs': 1,
             'maxOccurs': 1,
             'keywords': ['type']
@@ -62,9 +87,7 @@ PROCESS_METADATA = {
         'source': {
             'title': 'Source',
             'description': 'Source of resource',
-            'schema': {
-                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/item-spec/json-schema/item.json'  # noqa
-            },
+            'schema': REQUEST_SCHEMA['properties']['source'],
             'minOccurs': 0,
             'maxOccurs': 1,
             'keywords': ['source']
@@ -107,15 +130,20 @@ class RegistrarProcessor(BaseProcessor):
     def execute(self, data, outputs=None):
         mimetype = 'application/json'
 
-        type_ = data.get('type')
-        source = data.get('source')
+        validation_errors = []
         target = data.get('target')
 
-        if None in [type_, source]:
-            msg = 'Cannot process without a type and source'
-            raise ProcessorExecuteError(msg)
+        LOGGER.debug('Validating input against schema')
+        validator = Draft202012Validator(REQUEST_SCHEMA)
 
-        content = requests.get(source).json()
+        for error in validator.iter_errors(data):
+            LOGGER.debug(f'{error.json_path}: {error.message}')
+            validation_errors.append(f'{error.json_path}: {error.message}')
+
+        if validation_errors:
+            raise ProcessorExecuteError(validation_errors)
+
+        content = requests.get(data['source']).json()
 
         id_ = content['id']
 

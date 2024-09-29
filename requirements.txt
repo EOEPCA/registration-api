@@ -1,3 +1,4 @@
+jsonschema
 pygeoapi==0.18.0
 OWSLib
 requests
