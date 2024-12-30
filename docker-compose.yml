@@ -33,7 +33,6 @@ services:
     container_name: registration-api
     build:
       context: .
-    image: eoepca/registration-api:latest
     volumes:
       - registration-api-data:/data
     healthcheck:

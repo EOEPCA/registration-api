@@ -10,9 +10,9 @@ ENV TZ=${TZ} \
     DEBIAN_FRONTEND="noninteractive" \
     DEB_BUILD_DEPS="\
     software-properties-common \
-    curl \
     unzip" \
     DEB_PACKAGES="\
+    curl \
     locales \
     tzdata \
     gunicorn \
