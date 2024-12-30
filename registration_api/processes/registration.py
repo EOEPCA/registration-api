@@ -49,6 +49,8 @@ REGISTER_SCHEMA = {
             'oneOf': [{
                 '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/item-spec/json-schema/item.json'  # noqa
             }, {
+                '$ref': 'https://raw.githubusercontent.com/EOEPCA/metadata-profile/refs/heads/master/schemas/resource.json'  # noqa
+            }, {
                 'type': 'string',
                 'format': 'uri',
                 'description': 'Source data from URL'
@@ -228,7 +230,14 @@ class RegisterProcessor(BaseProcessor):
         if validation_errors:
             raise ProcessorExecuteError(validation_errors)
 
-        content = requests.get(data['source']).json()
+        content = data['source']
+
+        if isinstance(content, str) and content.startswith('http'):
+            LOGGER.debug('Source is a URL')
+            content = requests.get(content).json()
+        else:
+            LOGGER.debug('Source is an object')
+
         id_ = content['id']
         target = data['target']
 
