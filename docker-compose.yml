@@ -40,9 +40,9 @@ services:
       interval: 5s
       retries: 3
     restart: unless-stopped
+    <<: *logging
     networks:
       - registration-api-net
-    <<: *logging
 
   resource-and-data-catalogue:
     container_name: resource-and-data-catalogue
@@ -51,6 +51,7 @@ services:
       - ./docker/resource-and-data-catalogue/resource-and-data-catalogue.config.yml:/etc/pycsw/pycsw.yml
       - ./docker/resource-and-data-catalogue/data:/opt/pycsw
     restart: unless-stopped
+    <<: *logging
     networks:
       - registration-api-net
 
