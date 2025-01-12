@@ -47,9 +47,13 @@ REGISTER_SCHEMA = {
         },
         'source': {
             'oneOf': [{
-                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/item-spec/json-schema/item.json'  # noqa
+                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/item-spec/json-schema/item.json'  # noqa
             }, {
-                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/collection-spec/json-schema/collection.json'  # noqa
+                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/item-spec/json-schema/item.json'  # noqa
+            }, {
+                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/collection-spec/json-schema/collection.json'  # noqa
+            }, {
+                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/collection-spec/json-schema/collection.json'  # noqa
             }, {
                 '$ref': 'https://raw.githubusercontent.com/EOEPCA/metadata-profile/refs/heads/master/schemas/resource.json'  # noqa
             }, {
