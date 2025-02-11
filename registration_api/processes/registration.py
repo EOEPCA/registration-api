@@ -142,8 +142,41 @@ PROCESS_REGISTER_METADATA = {
             'title': 'Resource registration',
             'description': 'Resource registration',
             'schema': {
+                'contentMediaType': 'application/json',
                 'type': 'object',
-                'contentMediaType': 'application/json'
+                'properties': {
+                    'id': {
+                        'type': 'string',
+                        'description': 'Identifier'
+                    },
+                    'resource-and-data-catalogue-link': {
+                        'type': 'object',
+                        'description': 'Resource and Data Catalogue link',
+                        'properties': {
+                            'href': {
+                                'type': 'string',
+                                'description': 'URL of resource'
+                            },
+                            'rel': {
+                                'type': 'string',
+                                'description': 'link relation'
+                            },
+                            'type': {
+                                'type': 'string',
+                                'description': 'media type'
+                            }
+                        },
+                        'required': [
+                            'href',
+                            'rel',
+                            'type'
+                        ]
+                    }
+                },
+                'required': [
+                    'id',
+                    'resource-and-data-catalogue-link'
+                ]
             }
         }
     },
@@ -177,7 +210,7 @@ PROCESS_DEREGISTER_METADATA = {
     }],
     'inputs': {
         'id': {
-            'id': 'Identifier',
+            'title': 'Identifier',
             'description': DEREGISTER_SCHEMA['properties']['id']['description'],  # noqa
             'schema': DEREGISTER_SCHEMA['properties']['id'],
             'minOccurs': 1,
@@ -198,8 +231,17 @@ PROCESS_DEREGISTER_METADATA = {
             'title': 'Resource deregistration',
             'description': 'Resource deregistration',
             'schema': {
+                'contentMediaType': 'application/json',
                 'type': 'object',
-                'contentMediaType': 'application/json'
+                'properties': {
+                    'id': {
+                        'type': 'string',
+                        'description': 'Identifier'
+                    },
+                },
+                'required': [
+                    'id'
+                ]
             }
         }
     },
