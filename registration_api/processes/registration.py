@@ -29,6 +29,14 @@ from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
 
 LOGGER = logging.getLogger(__name__)
 
+SOURCE_TYPES = {
+    'collection': 'https://www.iana.org/go/rfc6573',
+    'item': 'https://www.iana.org/go/rfc6573'
+}
+TARGET_TYPES = {
+    'ogcapi-records': 'http://www.opengis.net/spec/ogcapi-records-1/1.0'
+}
+
 REGISTER_SCHEMA = {
     '$schema': 'https://json-schema.org/draft/2020-12/schema',
     '$id': 'eoepca-registration-api-process-registrar-register',
@@ -36,36 +44,73 @@ REGISTER_SCHEMA = {
     'description': 'EOEPCA registration API register schema',
     'type': 'object',
     'required': [
-        'type',
         'source',
         'target'
     ],
     'properties': {
-        'type': {
-            'type': 'string',
-            'description': 'Resource type'
-        },
         'source': {
+            'type': 'object',
+            'description': 'Source data',
+            'properties': {
+                'rel': {
+                    'type': 'string',
+                    'description': 'Link relation of resource',
+                    'enum': list(SOURCE_TYPES.keys())
+                },
+                'oneOf': [{
+                    'content': {
+                        'type': 'object',
+                        'description': 'Source data from inline content',
+                        'oneOf': [{
+                            '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/item-spec/json-schema/item.json'  # noqa
+                        }, {
+                            '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/item-spec/json-schema/item.json'  # noqa
+                        }, {
+                            '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/collection-spec/json-schema/collection.json'  # noqa
+                        }, {
+                            '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/collection-spec/json-schema/collection.json'  # noqa
+                        }, {
+                            '$ref': 'https://raw.githubusercontent.com/EOEPCA/metadata-profile/refs/heads/master/schemas/resource.json'  # noqa
+                        }]
+                    },
+                    'href': {
+                        'type': 'string',
+                        'format': 'uri',
+                        'description': 'Source data from URL'
+                    }
+                }]
+            },
             'oneOf': [{
-                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/item-spec/json-schema/item.json'  # noqa
+                'required': [
+                    'rel',
+                    'content'
+                ]
             }, {
-                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/item-spec/json-schema/item.json'  # noqa
-            }, {
-                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/collection-spec/json-schema/collection.json'  # noqa
-            }, {
-                '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/collection-spec/json-schema/collection.json'  # noqa
-            }, {
-                '$ref': 'https://raw.githubusercontent.com/EOEPCA/metadata-profile/refs/heads/master/schemas/resource.json'  # noqa
-            }, {
-                'type': 'string',
-                'format': 'uri',
-                'description': 'Source data from URL'
+                'required': [
+                    'rel',
+                    'href'
+                ]
             }]
         },
         'target': {
-            'type': 'string',
-            'format': 'uri',
-            'description': 'Endpoint to register to'
+            'type': 'object',
+            'description': 'Target service',
+            'properties': {
+                'rel': {
+                    'type': 'string',
+                    'description': 'Link relation of resource',
+                    'enum': list(TARGET_TYPES.values())
+                },
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'description': 'Endpoint to register to'
+                }
+            },
+            'required': [
+                'rel',
+                'href'
+            ]
         }
     }
 }
@@ -78,12 +123,18 @@ DEREGISTER_SCHEMA = {
     'type': 'object',
     'required': [
         'id',
+        'rel',
         'target'
     ],
     'properties': {
         'id': {
             'type': 'string',
             'description': 'Resource identifier'
+        },
+        'rel': {
+            'type': 'string',
+            'description': 'Link relation of resource',
+            'enum': list(SOURCE_TYPES.keys())
         },
         'target': {
             'type': 'string',
@@ -112,14 +163,6 @@ PROCESS_REGISTER_METADATA = {
         'hreflang': 'en-US'
     }],
     'inputs': {
-        'type': {
-            'title': 'Type',
-            'description': REGISTER_SCHEMA['properties']['type']['description'],  # noqa
-            'schema': REGISTER_SCHEMA['properties']['type'],
-            'minOccurs': 1,
-            'maxOccurs': 1,
-            'keywords': ['type']
-        },
         'source': {
             'title': 'Source',
             'description': 'Source of resource to register',
@@ -182,9 +225,14 @@ PROCESS_REGISTER_METADATA = {
     },
     'example': {
         'inputs': {
-            'type': 'item',
-            'source': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/examples/simple-item.json',  # noqa
-            'target': 'http://localhost:5002'
+            'source': {
+                'rel': 'item',
+                'href': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/heads/master/examples/simple-item.json',  # noqa
+            },
+            'target': {
+                'rel': TARGET_TYPES['ogcapi-records'],
+                'href': 'http://localhost:5002'
+            }
         }
     }
 }
@@ -217,6 +265,14 @@ PROCESS_DEREGISTER_METADATA = {
             'maxOccurs': 1,
             'keywords': ['identifier']
         },
+        'rel': {
+            'title': 'Link relation of resource',
+            'description': DEREGISTER_SCHEMA['properties']['rel']['description'],  # noqa
+            'schema': DEREGISTER_SCHEMA['properties']['rel'],
+            'minOccurs': 1,
+            'maxOccurs': 1,
+            'keywords': ['link relation']
+        },
         'target': {
             'title': 'Target',
             'description': DEREGISTER_SCHEMA['properties']['target']['description'],  # noqa
@@ -248,6 +304,7 @@ PROCESS_DEREGISTER_METADATA = {
     'example': {
         'inputs': {
             'id': '20201211_223832_CS',
+            'rel': 'item',
             'target': 'http://localhost:5002'
         }
     }
@@ -278,24 +335,51 @@ class RegisterProcessor(BaseProcessor):
         if validation_errors:
             raise ProcessorExecuteError(validation_errors)
 
-        content = data['source']
+        source = data['source']
 
-        if isinstance(content, str) and content.startswith('http'):
+        LOGGER.info(f"Registering {source['rel']}")
+
+        if source['rel'] not in SOURCE_TYPES:
+            msg = f'Invalid type (valid types are: {TARGET_TYPES.values()})'
+            LOGGER.error(msg)
+            raise ProcessorExecuteError(msg)
+
+        if 'href' in source:
             LOGGER.debug('Source is a URL')
-            content = requests.get(content).json()
+            content = requests.get(source['href']).json()
         else:
             LOGGER.debug('Source is an object')
+            content = data['source']['content']
+
+        if not isinstance(content, dict):
+            msg = 'Content invalid'
+            LOGGER.error(f'{msg}: {content}')
+            raise ProcessorExecuteError(msg)
 
         id_ = content['id']
+
         target = data['target']
 
-        r = Records(target)
+        if target['rel'] not in TARGET_TYPES.values():
+            msg = f'Invalid type (valid types are: {TARGET_TYPES.values()})'
+            LOGGER.error(msg)
+            raise ProcessorExecuteError(msg)
 
-        try:
-            _ = r.collection_item('metadata:main', id_)
-            r.collection_item_update('metadata:main', id_, content)
-        except RuntimeError:
-            r.collection_item_create('metadata:main', content)
+        r = Records(target['href'])
+
+        if target['rel'] == TARGET_TYPES['ogcapi-records']:
+            if source['rel'] == 'item':
+                try:
+                    _ = r.collection_item('metadata:main', id_)
+                    r.collection_item_update('metadata:main', id_, content)
+                except RuntimeError:
+                    r.collection_item_create('metadata:main', content)
+            elif source['rel'] == 'collection':
+                try:
+                    _ = r.collection(id_)
+                    r.collection_update(id_, content)
+                except RuntimeError:
+                    r.collection_create(content)
 
         produced_outputs = {}
 
@@ -303,7 +387,7 @@ class RegisterProcessor(BaseProcessor):
             produced_outputs = {
                 'id': PROCESS_REGISTER_METADATA['id'],
                 'resource-and-data-catalogue-link': {
-                    'href': f'{target}/collections/metadata:main/items/{id_}',
+                    'href': f"{target['href']}/collections/metadata:main/items/{id_}",  # noqa
                     'rel': 'item',
                     'type': 'application/geo+json'
                 }
@@ -339,15 +423,25 @@ class DeregisterProcessor(BaseProcessor):
             raise ProcessorExecuteError(validation_errors)
 
         id_ = data['id']
+        rel = data['rel']
         target = data['target']
+
+        LOGGER.info(f'Deregistering {rel}')
 
         r = Records(target)
 
-        try:
-            _ = r.collection_item('metadata:main', id_)
-            r.collection_item_delete('metadata:main', id_)
-        except RuntimeError as err:
-            LOGGER.error(err)
+        if rel == 'item':
+            try:
+                _ = r.collection_item('metadata:main', id_)
+                r.collection_item_delete('metadata:main', id_)
+            except RuntimeError as err:
+                LOGGER.error(err)
+        elif rel == 'collection':
+            try:
+                _ = r.collection(id_)
+                r.collection_delete(id_)
+            except RuntimeError as err:
+                LOGGER.error(err)
 
         produced_outputs = {}
 
