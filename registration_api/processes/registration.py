@@ -34,7 +34,8 @@ SOURCE_TYPES = {
     'item': 'https://www.iana.org/go/rfc6573'
 }
 TARGET_TYPES = {
-    'ogcapi-records': 'http://www.opengis.net/spec/ogcapi-records-1/1.0'
+    'ogcapi-records': 'http://www.opengis.net/spec/ogcapi-records-1/1.0',
+    'stac-api': 'https://api.stacspec.org/v1.0.0/core'
 }
 
 REGISTER_SCHEMA = {
@@ -105,6 +106,10 @@ REGISTER_SCHEMA = {
                     'type': 'string',
                     'format': 'uri',
                     'description': 'Endpoint to register to'
+                },
+                'collection': {
+                    'type': 'string',
+                    'description': 'Collection name'
                 }
             },
             'required': [
@@ -124,6 +129,7 @@ DEREGISTER_SCHEMA = {
     'required': [
         'id',
         'rel',
+        'collection',
         'target'
     ],
     'properties': {
@@ -136,11 +142,11 @@ DEREGISTER_SCHEMA = {
             'description': 'Link relation of resource',
             'enum': list(SOURCE_TYPES.keys())
         },
-        'target': {
+        'collection': {
             'type': 'string',
-            'format': 'uri',
-            'description': 'Endpoint to deregister from'
-        }
+            'description': 'Collection name'
+        },
+        'target': REGISTER_SCHEMA['properties']['target']
     }
 }
 
@@ -273,6 +279,14 @@ PROCESS_DEREGISTER_METADATA = {
             'maxOccurs': 1,
             'keywords': ['link relation']
         },
+        'collection': {
+            'title': 'Collection name',
+            'description': DEREGISTER_SCHEMA['properties']['collection']['description'],  # noqa
+            'schema': DEREGISTER_SCHEMA['properties']['collection'],
+            'minOccurs': 1,
+            'maxOccurs': 1,
+            'keywords': ['collection']
+        },
         'target': {
             'title': 'Target',
             'description': DEREGISTER_SCHEMA['properties']['target']['description'],  # noqa
@@ -305,7 +319,11 @@ PROCESS_DEREGISTER_METADATA = {
         'inputs': {
             'id': '20201211_223832_CS',
             'rel': 'item',
-            'target': 'http://localhost:5002'
+            'collection': 'sentinel-2-l2a',
+            'target': {
+                'rel': TARGET_TYPES['ogcapi-records'],
+                'href': 'http://localhost:5002'
+            }
         }
     }
 }
@@ -314,7 +332,7 @@ PROCESS_DEREGISTER_METADATA = {
 class RegisterProcessor(BaseProcessor):
     """Register Processor"""
 
-    def __init__(self, processor_def):
+    def __init__(self, processor_def: dict) -> None:
         """
         Initialize object
 
@@ -326,7 +344,7 @@ class RegisterProcessor(BaseProcessor):
         super().__init__(processor_def, PROCESS_REGISTER_METADATA)
         self.supports_outputs = True
 
-    def execute(self, data, outputs=None):
+    def execute(self, data: dict, outputs: dict = None) -> tuple:
         mimetype = 'application/json'
 
         LOGGER.debug('Validating input against schema')
@@ -359,6 +377,7 @@ class RegisterProcessor(BaseProcessor):
         id_ = content['id']
 
         target = data['target']
+        collection = target.get('collection')
 
         if target['rel'] not in TARGET_TYPES.values():
             msg = f'Invalid type (valid types are: {TARGET_TYPES.values()})'
@@ -367,27 +386,48 @@ class RegisterProcessor(BaseProcessor):
 
         r = Records(target['href'])
 
-        if target['rel'] == TARGET_TYPES['ogcapi-records']:
-            if source['rel'] == 'item':
-                try:
-                    _ = r.collection_item('metadata:main', id_)
-                    r.collection_item_update('metadata:main', id_, content)
-                except RuntimeError:
-                    r.collection_item_create('metadata:main', content)
-            elif source['rel'] == 'collection':
-                try:
-                    _ = r.collection(id_)
-                    r.collection_update(id_, content)
-                except RuntimeError:
-                    r.collection_create(content)
+        LOGGER.debug('Resolving collection identification')
+        if target['rel'] == TARGET_TYPES['stac-api']:
+            LOGGER.debug('STAC API mode detected')
+            if collection is None:
+                LOGGER.debug('Setting collection from content')
+                collection = content.get('collection')
+                if collection is None:
+                    msg = 'Collection identifier required'
+                    LOGGER.error(msg)
+                    raise ProcessorExecuteError(msg)
+            else:
+                LOGGER.debug('Setting collection from target.collection')
+                content['collection'] = collection
+
+        if (target['rel'] == TARGET_TYPES['ogcapi-records'] and
+                collection is None):
+            LOGGER.debug('OGC API - Records mode detected')
+            collection = 'metadata:main'
+
+        LOGGER.debug(f'Collection: {collection}')
+
+        if source['rel'] == 'item':
+            try:
+                _ = r.collection_item(collection, id_)
+                r.collection_item_update(collection, id_, content)
+            except RuntimeError:
+                r.collection_item_create(collection, content)
+        elif source['rel'] == 'collection':
+            try:
+                _ = r.collection(id_)
+                r.collection_update(id_, content)
+            except RuntimeError:
+                r.collection_create(content)
 
         produced_outputs = {}
 
         if not bool(outputs):
+            url = f"{target['href']}/collections/{collection}/items/{id_}"
             produced_outputs = {
                 'id': PROCESS_REGISTER_METADATA['id'],
                 'resource-and-data-catalogue-link': {
-                    'href': f"{target['href']}/collections/metadata:main/items/{id_}",  # noqa
+                    'href': url,
                     'rel': 'item',
                     'type': 'application/geo+json'
                 }
@@ -424,16 +464,24 @@ class DeregisterProcessor(BaseProcessor):
 
         id_ = data['id']
         rel = data['rel']
+        collection = data['collection']
         target = data['target']
 
         LOGGER.info(f'Deregistering {rel}')
 
-        r = Records(target)
+        r = Records(target['href'])
 
         if rel == 'item':
+            if collection is None:
+                if target['rel'] == TARGET_TYPES['ogcapi-records']:
+                    collection = 'metadata:main'
+                elif rel == TARGET_TYPES['stac-api']:
+                    msg = 'Collection identifier required'
+                    LOGGER.error(msg)
+                    raise ProcessorExecuteError(msg)
             try:
-                _ = r.collection_item('metadata:main', id_)
-                r.collection_item_delete('metadata:main', id_)
+                _ = r.collection_item(collection, id_)
+                r.collection_item_delete(collection, id_)
             except RuntimeError as err:
                 LOGGER.error(err)
         elif rel == 'collection':
@@ -456,7 +504,41 @@ class DeregisterProcessor(BaseProcessor):
         return f'<RegisterProcessor> {self.name}'
 
 
-def validate_json(schema, instance):
+def get_collection(target: dict, content: dict, collection: str = None) -> str:
+    """
+    Helper function to derive a collection from a target
+
+
+    :param target: `dict` of target definition
+    :param content: `dict` of content payload
+    :param collection: `str` of collection name (optional)
+
+    :returns: `str` of collection name
+    """
+
+    LOGGER.debug('Resolving collection identification')
+    if target['rel'] == TARGET_TYPES['stac-api']:
+        LOGGER.debug('STAC API mode detected')
+        if collection is None:
+            LOGGER.debug('Setting collection from content')
+            collection = content.get('collection')
+            if collection is None:
+                msg = 'Collection identifier required'
+                LOGGER.error(msg)
+                raise ProcessorExecuteError(msg)
+        else:
+            LOGGER.debug('Setting collection from target.collection')
+            content['collection'] = collection
+
+    if (target['rel'] == TARGET_TYPES['ogcapi-records'] and
+            collection is None):
+        LOGGER.debug('OGC API - Records mode detected')
+        collection = 'metadata:main'
+
+    LOGGER.debug(f'Collection: {collection}')
+
+
+def validate_json(schema: dict, instance: dict) -> list:
     """
     Helper function to validate JSON against a JSON Schema
 
