@@ -10,7 +10,8 @@ ENV TZ=${TZ} \
     DEBIAN_FRONTEND="noninteractive" \
     DEB_BUILD_DEPS="\
     software-properties-common \
-    unzip" \
+    unzip \
+    git" \
     DEB_PACKAGES="\
     curl \
     locales \
