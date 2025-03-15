@@ -129,7 +129,6 @@ DEREGISTER_SCHEMA = {
     'required': [
         'id',
         'rel',
-        'collection',
         'target'
     ],
     'properties': {
@@ -389,16 +388,19 @@ class RegisterProcessor(BaseProcessor):
         LOGGER.debug('Resolving collection identification')
         if target['rel'] == TARGET_TYPES['stac-api']:
             LOGGER.debug('STAC API mode detected')
-            if collection is None:
-                LOGGER.debug('Setting collection from content')
-                collection = content.get('collection')
+            if data['source']['rel'] == 'collection':
+                collection = content['id']
+            if data['source']['rel'] == 'item':
                 if collection is None:
-                    msg = 'Collection identifier required'
-                    LOGGER.error(msg)
-                    raise ProcessorExecuteError(msg)
-            else:
-                LOGGER.debug('Setting collection from target.collection')
-                content['collection'] = collection
+                    LOGGER.debug('Setting collection from content')
+                    collection = content.get('collection')
+                    if collection is None:
+                        msg = 'Collection identifier required'
+                        LOGGER.error(msg)
+                        raise ProcessorExecuteError(msg)
+                else:
+                    LOGGER.debug('Setting collection from target.collection')
+                    content['collection'] = collection
 
         if (target['rel'] == TARGET_TYPES['ogcapi-records'] and
                 collection is None):
@@ -423,7 +425,10 @@ class RegisterProcessor(BaseProcessor):
         produced_outputs = {}
 
         if not bool(outputs):
-            url = f"{target['href']}/collections/{collection}/items/{id_}"
+            if source['rel'] == 'item':
+                url = f"{target['href']}/collections/{collection}/items/{id_}"
+            elif source['rel'] == 'collection':
+                url = f"{target['href']}/collections/{collection}"
             produced_outputs = {
                 'id': PROCESS_REGISTER_METADATA['id'],
                 'resource-and-data-catalogue-link': {
@@ -464,7 +469,7 @@ class DeregisterProcessor(BaseProcessor):
 
         id_ = data['id']
         rel = data['rel']
-        collection = data['collection']
+        collection = data.get('collection')
         target = data['target']
 
         LOGGER.info(f'Deregistering {rel}')
@@ -495,7 +500,7 @@ class DeregisterProcessor(BaseProcessor):
 
         if not bool(outputs):
             produced_outputs = {
-                'id': PROCESS_DEREGISTER_METADATA['id']
+                'id': id_
             }
 
         return mimetype, produced_outputs
