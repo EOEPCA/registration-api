@@ -1,0 +1,98 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "eoepca-registration-api-process-registrar-register",
+    "title": "EOEPCA registration API register schema",
+    "description": "EOEPCA registration API register schema",
+    "type": "object",
+    "required": [
+        "source",
+        "target"
+    ],
+    "properties": {
+        "source": {
+            "type": "object",
+            "description": "Source data",
+            "properties": {
+                "rel": {
+                    "type": "string",
+                    "description": "Link relation of resource",
+                    "enum": [
+                        "collection",
+                        "item"
+                    ]
+                },
+                "oneOf": [
+                    {
+                        "content": {
+                            "type": "object",
+                            "description": "Source data from inline content",
+                            "oneOf": [
+                                {
+                                    "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/item-spec/json-schema/item.json"
+                                },
+                                {
+                                    "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/item-spec/json-schema/item.json"
+                                },
+                                {
+                                    "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/collection-spec/json-schema/collection.json"
+                                },
+                                {
+                                    "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/collection-spec/json-schema/collection.json"
+                                },
+                                {
+                                    "$ref": "https://raw.githubusercontent.com/EOEPCA/metadata-profile/refs/heads/master/schemas/resource.json"
+                                }
+                            ]
+                        },
+                        "href": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "Source data from URL"
+                        }
+                    }
+                ]
+            },
+            "oneOf": [
+                {
+                    "required": [
+                        "rel",
+                        "content"
+                    ]
+                },
+                {
+                    "required": [
+                        "rel",
+                        "href"
+                    ]
+                }
+            ]
+        },
+        "target": {
+            "type": "object",
+            "description": "Target service",
+            "properties": {
+                "rel": {
+                    "type": "string",
+                    "description": "Link relation of resource",
+                    "enum": [
+                        "http://www.opengis.net/spec/ogcapi-records-1/1.0",
+                        "https://api.stacspec.org/v1.0.0/core"
+                    ]
+                },
+                "href": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Endpoint to register to"
+                },
+                "collection": {
+                    "type": "string",
+                    "description": "Collection name"
+                }
+            },
+            "required": [
+                "rel",
+                "href"
+            ]
+        }
+    }
+}

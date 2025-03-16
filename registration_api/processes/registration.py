@@ -19,7 +19,9 @@
 #
 ###############################################################################
 
+import json
 import logging
+import os
 
 from jsonschema.validators import Draft202012Validator
 from owslib.ogcapi.records import Records
@@ -38,116 +40,14 @@ TARGET_TYPES = {
     'stac-api': 'https://api.stacspec.org/v1.0.0/core'
 }
 
-REGISTER_SCHEMA = {
-    '$schema': 'https://json-schema.org/draft/2020-12/schema',
-    '$id': 'eoepca-registration-api-process-registrar-register',
-    'title': 'EOEPCA registration API register schema',
-    'description': 'EOEPCA registration API register schema',
-    'type': 'object',
-    'required': [
-        'source',
-        'target'
-    ],
-    'properties': {
-        'source': {
-            'type': 'object',
-            'description': 'Source data',
-            'properties': {
-                'rel': {
-                    'type': 'string',
-                    'description': 'Link relation of resource',
-                    'enum': list(SOURCE_TYPES.keys())
-                },
-                'oneOf': [{
-                    'content': {
-                        'type': 'object',
-                        'description': 'Source data from inline content',
-                        'oneOf': [{
-                            '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/item-spec/json-schema/item.json'  # noqa
-                        }, {
-                            '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/item-spec/json-schema/item.json'  # noqa
-                        }, {
-                            '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.0.0/collection-spec/json-schema/collection.json'  # noqa
-                        }, {
-                            '$ref': 'https://raw.githubusercontent.com/radiantearth/stac-spec/refs/tags/v1.1.0/collection-spec/json-schema/collection.json'  # noqa
-                        }, {
-                            '$ref': 'https://raw.githubusercontent.com/EOEPCA/metadata-profile/refs/heads/master/schemas/resource.json'  # noqa
-                        }]
-                    },
-                    'href': {
-                        'type': 'string',
-                        'format': 'uri',
-                        'description': 'Source data from URL'
-                    }
-                }]
-            },
-            'oneOf': [{
-                'required': [
-                    'rel',
-                    'content'
-                ]
-            }, {
-                'required': [
-                    'rel',
-                    'href'
-                ]
-            }]
-        },
-        'target': {
-            'type': 'object',
-            'description': 'Target service',
-            'properties': {
-                'rel': {
-                    'type': 'string',
-                    'description': 'Link relation of resource',
-                    'enum': list(TARGET_TYPES.values())
-                },
-                'href': {
-                    'type': 'string',
-                    'format': 'uri',
-                    'description': 'Endpoint to register to'
-                },
-                'collection': {
-                    'type': 'string',
-                    'description': 'Collection name'
-                }
-            },
-            'required': [
-                'rel',
-                'href'
-            ]
-        }
-    }
-}
+SCHEMAS = os.environ['REGISTRATION_API_SCHEMAS']
 
-DEREGISTER_SCHEMA = {
-    '$schema': 'https://json-schema.org/draft/2020-12/schema',
-    '$id': 'eoepca-registration-api-process-registrar-deregister',
-    'title': 'EOEPCA registration API deregister schema',
-    'description': 'EOEPCA registration API deregister schema',
-    'type': 'object',
-    'required': [
-        'id',
-        'rel',
-        'target'
-    ],
-    'properties': {
-        'id': {
-            'type': 'string',
-            'description': 'Resource identifier'
-        },
-        'rel': {
-            'type': 'string',
-            'description': 'Link relation of resource',
-            'enum': list(SOURCE_TYPES.keys())
-        },
-        'collection': {
-            'type': 'string',
-            'description': 'Collection name'
-        },
-        'target': REGISTER_SCHEMA['properties']['target']
-    }
-}
+with open(f'{SCHEMAS}/process-register.json') as fh:
+    REGISTER_SCHEMA = json.load(fh)
+
+with open(f'{SCHEMAS}/process-deregister.json') as fh:
+    DEREGISTER_SCHEMA = json.load(fh)
+
 
 PROCESS_REGISTER_METADATA = {
     'version': '0.1.0',
@@ -489,12 +389,16 @@ class DeregisterProcessor(BaseProcessor):
                 r.collection_item_delete(collection, id_)
             except RuntimeError as err:
                 LOGGER.error(err)
+                msg = get_exception_description(err)
+                raise ProcessorExecuteError(msg)
         elif rel == 'collection':
             try:
                 _ = r.collection(id_)
                 r.collection_delete(id_)
             except RuntimeError as err:
                 LOGGER.error(err)
+                msg = get_exception_description(err)
+                raise ProcessorExecuteError(msg)
 
         produced_outputs = {}
 
@@ -562,3 +466,15 @@ def validate_json(schema: dict, instance: dict) -> list:
         validation_errors.append(f'{error.json_path}: {error.message}')
 
     return validation_errors
+
+
+def get_exception_description(exception: str) -> str:
+    """
+    Helper function to return an exception description
+
+    :param exception: `str` of exception JSON
+
+    :returns: `str` of exception message
+    """
+
+    return json.loads(str(exception))['description']

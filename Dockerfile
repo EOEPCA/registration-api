@@ -27,7 +27,8 @@ ENV TZ=${TZ} \
     python3-pyproj \
     python3-rasterio \
     python3-shapely \
-    python3-tinydb"
+    python3-tinydb" \
+    REGISTRATION_API_SCHEMAS=/registration-api/schemas
 
 WORKDIR /pygeoapi
 
@@ -42,6 +43,7 @@ RUN \
     && apt autoremove -y  \
     && rm -rf /var/lib/apt/lists/*
 
+ADD schemas ${REGISTRATION_API_SCHEMAS}
 ADD requirements.txt /pygeoapi/
 ADD registration-api.config.yml /pygeoapi/local.config.yml
 ADD entrypoint.sh /entrypoint.sh

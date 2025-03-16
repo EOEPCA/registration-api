@@ -1,0 +1,53 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "eoepca-registration-api-process-registrar-deregister",
+    "title": "EOEPCA registration API deregister schema",
+    "description": "EOEPCA registration API deregister schema",
+    "type": "object",
+    "required": [
+        "id",
+        "rel",
+        "target"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Resource identifier"
+        },
+        "rel": {
+            "type": "string",
+            "description": "Link relation of resource",
+            "enum": [
+                "collection",
+                "item"
+            ]
+        },
+        "collection": {
+            "type": "string",
+            "description": "Collection name"
+        },
+        "target": {
+            "type": "object",
+            "description": "Target service",
+            "properties": {
+                "rel": {
+                    "type": "string",
+                    "description": "Link relation of resource",
+                    "enum": [
+                        "http://www.opengis.net/spec/ogcapi-records-1/1.0",
+                        "https://api.stacspec.org/v1.0.0/core"
+                    ]
+                },
+                "href": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Endpoint to register to"
+                },
+                "collection": {
+                    "type": "string",
+                    "description": "Collection name"
+                }
+            }
+        }
+    }
+}
