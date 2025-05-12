@@ -311,6 +311,12 @@ class RegisterProcessor(BaseProcessor):
 
         if source['rel'] == 'item':
             try:
+                _ = r.collection(collection)
+            except RuntimeError:
+                msg = 'Collection not found'
+                LOGGER.error(msg)
+                raise ProcessorExecuteError(msg)
+            try:
                 _ = r.collection_item(collection, id_)
                 r.collection_item_update(collection, id_, content)
             except RuntimeError:
