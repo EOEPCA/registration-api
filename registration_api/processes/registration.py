@@ -246,7 +246,7 @@ class RegisterProcessor(BaseProcessor):
     def execute(self, data: dict, outputs: dict = None) -> tuple:
         mimetype = 'application/json'
 
-        LOGGER.debug('Validating input against schema')
+        LOGGER.debug('Validating request payload against schema')
         validation_errors = validate_json(REGISTER_SCHEMA, data)
 
         if validation_errors:
@@ -264,9 +264,15 @@ class RegisterProcessor(BaseProcessor):
         if 'href' in source:
             LOGGER.debug('Source is a URL')
             content = requests.get(source['href']).json()
+            LOGGER.debug('Performing source validation')
+            validation_errors = validate_json(
+                REGISTER_SCHEMA['properties']['source']['properties']['oneOf'][0]['content'],  # noqa
+                content
+            )
         else:
             LOGGER.debug('Source is an object')
             content = data['source']['content']
+            LOGGER.debug('Source is already valid')
 
         if not isinstance(content, dict):
             msg = 'Content invalid'
