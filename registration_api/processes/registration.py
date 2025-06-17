@@ -245,6 +245,8 @@ class RegisterProcessor(BaseProcessor):
         self.supports_outputs = True
 
     def execute(self, data: dict, outputs: dict = None) -> tuple:
+
+        self.auth = None
         mimetype = 'application/json'
 
         LOGGER.debug('Validating request payload against schema')
@@ -301,7 +303,22 @@ class RegisterProcessor(BaseProcessor):
             LOGGER.error(msg)
             raise ProcessorExecuteError(msg)
 
-        r = Records(target['href'])
+        headers = {}
+
+        access_token = get_iam_access_token(
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_CLIENT_ID'),
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_CLIENT_SECRET'),
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_REALM'),
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_GRANT_TYPE'),
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_ENDPOINT')
+        )
+
+        if access_token is not None:
+            headers = {
+               'Authorization': f'Bearer {access_token}'
+            }
+
+        r = Records(target['href'], headers=headers)
 
         LOGGER.debug('Resolving collection identification')
         if target['rel'] == TARGET_TYPES['stac-api']:
@@ -503,3 +520,38 @@ def get_exception_description(exception: str) -> str:
     """
 
     return json.loads(str(exception))['description']
+
+
+def get_iam_access_token(client_id: str, client_secret: str, realm: str,
+                         grant_type: str, iam_url: str) -> str:
+    """
+    Helper function to return access token from IAM
+
+    :param client_id: client id
+    :param client_secret: client secret
+    :param realm: realm
+    :param grant_type: grant type
+    :param iam_url: URL of IAMgrant_type:client_secret: client secret
+
+    :returns: `str` of access token or `None`
+    """
+
+    if None in [client_id, client_secret, realm, grant_type, iam_url]:
+        LOGGER.warning('Missing IAM credential information in environment')
+
+    payload = {
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'grant_type': grant_type
+    }
+
+    url = f'{iam_url}/realms/{realm}/protocol/openid-connect/token'
+
+    try:
+        response = requests.post(url, data=payload)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        LOGGER.warning(f'IAM auth error: {err}')
+        return None
+
+    return response.json().get('access_token')

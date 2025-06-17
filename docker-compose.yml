@@ -35,6 +35,12 @@ services:
       context: .
     volumes:
       - registration-api-data:/data
+    environment:
+      - EOEPCA_REGISTRATION_API_IAM_CLIENT_ID: client_id
+      - EOEPCA_REGISTRATION_API_IAM_CLIENT_SECRET: client_secret
+      - EOEPCA_REGISTRATION_API_IAM_REALM: eoepca
+      - EOEPCA_REGISTRATION_API_IAM_GRANT_TYPE: client_credentials
+      - EOEPCA_REGISTRATION_API_IAM_ENDPOINT: http://localhost
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/conformance"]
       interval: 5s
