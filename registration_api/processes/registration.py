@@ -279,6 +279,17 @@ class RegisterProcessor(BaseProcessor):
             LOGGER.error(f'{msg}: {content}')
             raise ProcessorExecuteError(msg)
 
+        for stac_extension in content.get('stac_extensions', []):
+            LOGGER.debug(f'Validating against STAC Extension {stac_extension}')
+            stac_extension_schema = requests.get(stac_extension)
+            stac_extension_schema.raise_for_status()
+
+            validation_errors = validate_json(
+                stac_extension_schema.json(), content)
+
+            if validation_errors:
+                raise ProcessorExecuteError(validation_errors)
+
         id_ = content['id']
 
         target = data['target']
