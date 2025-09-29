@@ -41,6 +41,9 @@
                                 },
                                 {
                                     "$ref": "https://raw.githubusercontent.com/EOEPCA/metadata-profile/refs/heads/master/schemas/resource.json"
+                                },
+                                {
+                                    "$ref": "https://gist.githubusercontent.com/tomkralidis/a6713e2bc2f9fef5f39b52e0893674bc/raw/cf23172f02df807f717a267390d09f9efa32919f/cwl-1.2.json"
                                 }
                             ]
                         },

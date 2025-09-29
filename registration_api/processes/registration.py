@@ -26,9 +26,13 @@ from typing import Union
 
 from jsonschema.validators import Draft202012Validator
 from owslib.ogcapi.records import Records
-import requests
-
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
+from pygeometa.schemas.ogcapi_records import OGCAPIRecordOutputSchema
+import requests
+import yaml
+
+from registration_api.parsers.cwl import from_cwl
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -248,6 +252,7 @@ class RegisterProcessor(BaseProcessor):
 
         self.auth = None
         mimetype = 'application/json'
+        resource_mimetype = 'application/geo+json'
 
         LOGGER.debug('Validating request payload against schema')
         validation_errors = validate_json(REGISTER_SCHEMA, data)
@@ -266,7 +271,13 @@ class RegisterProcessor(BaseProcessor):
 
         if 'href' in source:
             LOGGER.debug('Source is a URL')
-            content = requests.get(source['href']).json()
+            try:
+                content = requests.get(source['href']).json()
+            except json.decoder.JSONDecodeError as err:
+                LOGGER.debug(f'Error parsing JSON: {err}')
+                LOGGER.debug('Attempting YAML parsing')
+                content = yaml.safe_load(requests.get(source['href']).text)
+
             LOGGER.debug('Performing source validation')
             validation_errors = validate_json(
                 REGISTER_SCHEMA['properties']['source']['properties']['oneOf'][0]['content'],  # noqa
@@ -281,6 +292,12 @@ class RegisterProcessor(BaseProcessor):
             msg = 'Content invalid'
             LOGGER.error(f'{msg}: {content}')
             raise ProcessorExecuteError(msg)
+
+        if 'cwlVersion' in content:
+            LOGGER.debug('Parsing CWL')
+            content = from_cwl(content, url=source.get('href'))
+            content = OGCAPIRecordOutputSchema().write(
+                content, stringify=False)
 
         for stac_extension in content.get('stac_extensions', []):
             LOGGER.debug(f'Validating against STAC Extension {stac_extension}')
@@ -373,12 +390,13 @@ class RegisterProcessor(BaseProcessor):
                 url = f"{target['href']}/collections/{collection}/items/{id_}"
             elif source['rel'] == 'collection':
                 url = f"{target['href']}/collections/{collection}"
+                resource_mimetype = 'application/json'
             produced_outputs = {
                 'id': PROCESS_REGISTER_METADATA['id'],
                 'resource-and-data-catalogue-link': {
                     'href': url,
                     'rel': 'item',
-                    'type': 'application/geo+json'
+                    'type': resource_mimetype
                 }
             }
 
@@ -504,6 +522,8 @@ def validate_json(schema: dict, instance: dict) -> list:
 
     validation_errors = []
     LOGGER.debug('Validating input against schema')
+    LOGGER.debug(f'Input: {instance}')
+    LOGGER.debug(f'Schema: {schema}')
     validator = Draft202012Validator(schema)
 
     for error in validator.iter_errors(instance):
