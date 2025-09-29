@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20240911.1
+FROM ubuntu:noble-20250910
 
 # ARGS
 ARG TZ="Etc/UTC"
@@ -16,7 +16,6 @@ ENV TZ=${TZ} \
     git \
     locales \
     tzdata \
-    gunicorn \
     python3-flask \
     python3-dateutil \
     python3-gevent \
@@ -27,7 +26,8 @@ ENV TZ=${TZ} \
     python3-pyproj \
     python3-rasterio \
     python3-shapely \
-    python3-tinydb" \
+    python3-tinydb \
+    python3-venv" \
     REGISTRATION_API_SCHEMAS=/registration-api/schemas
 
 WORKDIR /pygeoapi
@@ -47,9 +47,11 @@ ADD schemas ${REGISTRATION_API_SCHEMAS}
 ADD requirements.txt /pygeoapi/
 ADD registration-api.config.yml /pygeoapi/local.config.yml
 ADD entrypoint.sh /entrypoint.sh
-ADD registration_api /usr/local/lib/python3.10/dist-packages/registration_api
+ADD registration_api /usr/local/lib/python3.12/dist-packages/registration_api
 
 # Install pygeoapi
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
+RUN python3 -m venv --system-site-packages /venv \
+    && /venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt \
+    && chmod -R g=u /pygeoapi
 
 ENTRYPOINT ["/entrypoint.sh"]

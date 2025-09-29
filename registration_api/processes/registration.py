@@ -22,6 +22,7 @@
 import json
 import logging
 import os
+from typing import Union
 
 from jsonschema.validators import Draft202012Validator
 from owslib.ogcapi.records import Records
@@ -436,7 +437,8 @@ class DeregisterProcessor(BaseProcessor):
         return f'<RegisterProcessor> {self.name}'
 
 
-def get_collection(target: dict, content: dict, collection: str = None) -> str:
+def get_collection(target: dict, content: dict,
+                   collection: str = None) -> Union[str, None]:
     """
     Helper function to derive a collection from a target
 
