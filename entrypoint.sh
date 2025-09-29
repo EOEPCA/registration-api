@@ -38,8 +38,9 @@ echo "START /entrypoint.sh"
 set +e
 
 export PYGEOAPI_HOME=/pygeoapi
+export OPENAPI_HOME=/openapi
 export PYGEOAPI_CONFIG="${PYGEOAPI_HOME}/local.config.yml"
-export PYGEOAPI_OPENAPI="${PYGEOAPI_HOME}/local.openapi.yml"
+export PYGEOAPI_OPENAPI="${OPENAPI_HOME}/local.openapi.yml"
 
 # gunicorn env settings with defaults
 SCRIPT_NAME=${SCRIPT_NAME:=/}
@@ -61,6 +62,7 @@ function error() {
 
 # Workdir
 cd ${PYGEOAPI_HOME}
+mkdir -p ${OPENAPI_HOME}
 
 echo "Trying to generate openapi.yml"
 /venv/bin/pygeoapi openapi generate ${PYGEOAPI_CONFIG} --output-file ${PYGEOAPI_OPENAPI}
