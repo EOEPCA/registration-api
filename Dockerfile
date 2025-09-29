@@ -52,6 +52,12 @@ ADD registration_api /usr/local/lib/python3.12/dist-packages/registration_api
 # Install pygeoapi
 RUN python3 -m venv --system-site-packages /venv \
     && /venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt \
-    && chmod -R g=u /pygeoapi
+    && chmod -R g=u /pygeoapi \
+    && chown -R ubuntu /pygeoapi \
+    && mkdir -p /openapi \
+    && chmod -R g=u /openapi \
+    && chown -R ubuntu /openapi
+
+USER ubuntu
 
 ENTRYPOINT ["/entrypoint.sh"]
