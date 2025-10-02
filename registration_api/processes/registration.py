@@ -546,6 +546,9 @@ def get_iam_access_token(client_id: str, client_secret: str, realm: str,
     }
 
     url = f'{iam_url}/realms/{realm}/protocol/openid-connect/token'
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     try:
         response = requests.post(url, data=payload)
