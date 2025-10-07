@@ -29,18 +29,23 @@ x-logging: &logging
       max-file: 1
 
 services:
+  broker:
+    container_name: broker
+    build:
+      context: ./docker/broker/
+    restart: unless-stopped
+    networks:
+      - registration-api-net
+    <<: *logging
+
   registration-api:
     container_name: registration-api
     build:
       context: .
     volumes:
       - registration-api-data:/data
-    environment:
-      - EOEPCA_REGISTRATION_API_IAM_CLIENT_ID: client_id
-      - EOEPCA_REGISTRATION_API_IAM_CLIENT_SECRET: client_secret
-      - EOEPCA_REGISTRATION_API_IAM_REALM: eoepca
-      - EOEPCA_REGISTRATION_API_IAM_GRANT_TYPE: client_credentials
-      - EOEPCA_REGISTRATION_API_IAM_ENDPOINT: http://localhost
+    env_file:
+      - registration-api.env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/conformance"]
       interval: 5s
@@ -52,10 +57,13 @@ services:
 
   resource-and-data-catalogue:
     container_name: resource-and-data-catalogue
-    image: geopython/pycsw:latest
+    build:
+        context: docker/resource-and-data-catalogue
     volumes:
       - ./docker/resource-and-data-catalogue/resource-and-data-catalogue.config.yml:/etc/pycsw/pycsw.yml
-      - ./docker/resource-and-data-catalogue/data:/opt/pycsw
+      - ./docker/resource-and-data-catalogue/data:/opt/pycsw:rw
+    env_file:
+      - registration-api.env
     restart: unless-stopped
     <<: *logging
     networks:

@@ -1,0 +1,8 @@
+SQLAlchemy<2.0.0
+Flask
+pygeofilter
+PyYAML
+pygeoif
+gunicorn
+https://github.com/geopython/pycsw/archive/master.zip
+paho-mqtt

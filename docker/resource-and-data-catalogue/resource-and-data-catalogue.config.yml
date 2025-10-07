@@ -45,7 +45,7 @@ server:
     #timeout=30
 
 logging:
-    level: ERROR
+    level: DEBUG
     logfile: /tmp/pycsw.log
 
 profiles:
@@ -59,6 +59,11 @@ manager:
     allowed_ips:
         - '192.168.*'
     csw_harvest_pagesize: 10
+
+pubsub:
+    broker:
+        type: mqtt
+        url: ${EOEPCA_REGISTRATION_API_BROKER}
 
 metadata:
     identification:
