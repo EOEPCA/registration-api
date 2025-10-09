@@ -313,9 +313,12 @@ class RegisterProcessor(BaseProcessor):
             os.environ.get('EOEPCA_REGISTRATION_API_IAM_ENDPOINT')
         )
 
+        # LOGGER.info(f'ACCESS_TOKEN: {access_token}')
+
         if access_token is not None:
             headers = {
-               'Authorization': f'Bearer {access_token}'
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {access_token}'
             }
 
         r = Records(target['href'], headers=headers)
@@ -551,7 +554,7 @@ def get_iam_access_token(client_id: str, client_secret: str, realm: str,
     }
 
     try:
-        response = requests.post(url, data=payload)
+        response = requests.post(url, data=payload, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         LOGGER.warning(f'IAM auth error: {err}')
