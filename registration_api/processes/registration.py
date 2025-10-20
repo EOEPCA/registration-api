@@ -436,6 +436,24 @@ class DeregisterProcessor(BaseProcessor):
 
         LOGGER.info(f'Deregistering {rel}')
 
+        headers = {}
+
+        access_token = get_iam_access_token(
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_CLIENT_ID'),
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_CLIENT_SECRET'),
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_REALM'),
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_GRANT_TYPE'),
+            os.environ.get('EOEPCA_REGISTRATION_API_IAM_ENDPOINT')
+        )
+
+        # LOGGER.info(f'ACCESS_TOKEN: {access_token}')
+
+        if access_token is not None:
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {access_token}'
+            }
+
         r = Records(target['href'])
 
         if rel == 'item':
