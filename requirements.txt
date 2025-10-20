@@ -2,6 +2,6 @@ gunicorn==23.0.0
 jsonschema==4.25.1
 pygeoapi==0.21.0
 pygeometa==0.18.0
-OWSLib==0.34.1
+OWSLib @ git+https://github.com/geopython/OWSLib@3646e85964f1a45d48c14e8e232d36bf4e9c7b27
 requests==2.32.5
 PyYAML==6.0.3
