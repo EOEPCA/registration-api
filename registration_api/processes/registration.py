@@ -454,7 +454,7 @@ class DeregisterProcessor(BaseProcessor):
                 'Authorization': f'Bearer {access_token}'
             }
 
-        r = Records(target['href'])
+        r = Records(target['href'], headers=headers)
 
         if rel == 'item':
             if collection is None:
