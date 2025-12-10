@@ -597,5 +597,8 @@ def get_iam_access_token(client_id: str, client_secret: str, realm: str,
     except requests.exceptions.HTTPError as err:
         LOGGER.warning(f'IAM auth error: {err}')
         return None
+    except requests.exceptions.MissingSchema as err:
+        LOGGER.warning(f'Invalid URL: {err}')
+        return None
 
     return response.json().get('access_token')
