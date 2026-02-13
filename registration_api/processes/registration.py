@@ -535,7 +535,7 @@ def validate_json(schema: dict, instance: dict) -> list:
     :param schema: `dict` of JSON Schema
     :paran instance: `dict` of request instance
 
-    :returns: `list` of valiation errors
+    :returns: `list` of validation errors
     """
 
     validation_errors = []
