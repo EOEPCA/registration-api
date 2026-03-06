@@ -68,7 +68,7 @@ ADD registration_api/resources/schemas ${REGISTRATION_API_SCHEMAS}
 ADD requirements.txt /pygeoapi/
 ADD docker/registration-api.config.yml /pygeoapi/local.config.yml
 ADD docker/entrypoint.sh /entrypoint.sh
-ADD registration_api /usr/local/lib/python3.12/dist-packages/registration_api
+ADD registration_api /venv/lib/python3.12/site-packages/registration_api
 
 # Install pygeoapi
 RUN python3 -m venv --system-site-packages /venv \

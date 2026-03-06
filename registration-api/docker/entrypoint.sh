@@ -60,6 +60,9 @@ function error() {
     exit -1
 }
 
+echo "Caching EOMP schemas"
+/venv/bin/pyeomp bundle sync
+
 # Workdir
 cd ${PYGEOAPI_HOME}
 mkdir -p ${OPENAPI_HOME}

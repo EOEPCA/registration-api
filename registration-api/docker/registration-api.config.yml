@@ -68,3 +68,7 @@ resources:
         type: process
         processor:
             name: registration_api.processes.registration.DeregisterProcessor
+    pyeomp-record-validate:
+        type: process
+        processor:
+            name: pyeomp.pygeoapi_plugin.EOMPETSProcessor
