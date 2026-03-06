@@ -32,7 +32,7 @@ services:
   broker:
     container_name: broker
     build:
-      context: ./docker/broker/
+      context: ./broker
     restart: unless-stopped
     networks:
       - registration-api-net
@@ -41,7 +41,7 @@ services:
   registration-api:
     container_name: registration-api
     build:
-      context: .
+      context: ./registration-api
     volumes:
       - registration-api-data:/data
     env_file:
@@ -58,10 +58,10 @@ services:
   resource-and-data-catalogue:
     container_name: resource-and-data-catalogue
     build:
-        context: docker/resource-and-data-catalogue
+        context: ./resource-and-data-catalogue
     volumes:
-      - ./docker/resource-and-data-catalogue/resource-and-data-catalogue.config.yml:/etc/pycsw/pycsw.yml
-      - ./docker/resource-and-data-catalogue/data:/opt/pycsw:rw
+      - ./resource-and-data-catalogue/resource-and-data-catalogue.config.yml:/etc/pycsw/pycsw.yml
+      - ./resource-and-data-catalogue/data:/opt/pycsw:rw
     env_file:
       - registration-api.env
     restart: unless-stopped

@@ -19,7 +19,7 @@
 #
 ###############################################################################
 
-FROM ubuntu:noble
+FROM ubuntu:noble-20250910
 
 # ARGS
 ARG TZ="Etc/UTC"
@@ -30,55 +30,37 @@ ENV TZ=${TZ} \
     LANG=${LANG} \
     DEBIAN_FRONTEND="noninteractive" \
     DEB_BUILD_DEPS="\
-    software-properties-common \
-    unzip" \
+    software-properties-common" \
     DEB_PACKAGES="\
-    curl \
     git \
     locales \
     tzdata \
-    python3-flask \
-    python3-dateutil \
-    python3-gevent \
-    python3-greenlet \
     python3-pip \
-    python3-tz \
-    python3-yaml \
-    python3-pyproj \
-    python3-rasterio \
-    python3-shapely \
-    python3-tinydb \
-    python3-venv" \
-    REGISTRATION_API_SCHEMAS=/registration-api/schemas
+    python3-venv"
 
-WORKDIR /pygeoapi
+ENV PYCSW_CONFIG=/etc/pycsw/pycsw.yml
+
+WORKDIR /pycsw
+
+ADD docker/entrypoint.py /entrypoint.py
+ADD requirements.txt /pycsw/
 
 # Install operating system dependencies
 RUN \
     apt-get update -y \
     && apt-get install -y ${DEB_BUILD_DEPS} \
-    && add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
     && apt-get --no-install-recommends install -y ${DEB_PACKAGES} \
     && apt-get remove --purge -y gcc ${DEB_BUILD_DEPS} \
     && apt-get clean \
     && apt autoremove -y  \
     && rm -rf /var/lib/apt/lists/*
 
-ADD schemas ${REGISTRATION_API_SCHEMAS}
-ADD requirements.txt /pygeoapi/
-ADD registration-api.config.yml /pygeoapi/local.config.yml
-ADD entrypoint.sh /entrypoint.sh
-ADD registration_api /usr/local/lib/python3.12/dist-packages/registration_api
-
-# Install pygeoapi
+# Install pycsw
 RUN python3 -m venv --system-site-packages /venv \
-    && /venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt \
-    && chmod -R g=u /pygeoapi \
-    && chown -R ubuntu /pygeoapi \
-    && mkdir -p /openapi \
-    && chmod -R g=u /openapi \
-    && chown -R ubuntu /openapi
+    && /venv/bin/pip3 install --no-cache-dir -r requirements.txt \
+    && chmod -R g=u /pycsw \
+    && chown -R ubuntu /pycsw
 
 USER ubuntu
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT [ "/venv/bin/python3", "/entrypoint.py" ]
