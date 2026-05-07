@@ -52,7 +52,16 @@ profiles:
     - apiso
 
 federatedcatalogues:
-    - http://catalog.data.gov/csw
+    - id: fedcat01
+      type: OARec
+      title: WIS2 discovery metadata
+      url: https://wis2-gdc.weather.gc.ca/collections/wis2-discovery-metadata
+    - id: fedcat02
+      type: STAC-API
+      title: Copernicus Data Space Ecosystem (CDSE) asset-level STAC catalogue
+      url: https://stac.dataspace.copernicus.eu/v1
+      collections:
+          - ccm-sar
 
 manager:
     transactions: true
