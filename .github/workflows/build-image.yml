@@ -23,6 +23,9 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: eoepca/registration-api
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
